@@ -10,10 +10,10 @@ from twisted.internet import task, reactor
 import devises
 import threading
 
-Token = '5281870367:AAEVNXhT92or02mCbxGKzSR4uNy4dNYTybg'
-GROUP_ID = -1001757927397
+Token = '######'
+GROUP_ID = #####
 username = 'alexhardim@gmail.com'
-password = '110121q!'
+password = '######'
 region='eu'
 api_region = 'eu'
 timezone='EU/Moscow'
