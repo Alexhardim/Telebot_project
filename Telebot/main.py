@@ -45,7 +45,7 @@ print(config.r)
 for i in range(len(config.result2)):
     config.gm.append(config.result2[i][0])
 
-
+# стартовая функция
 @dp.message_handler(commands=['start'], commands_prefix='!/')
 async def process_start_command(message: types.Message):
     global t
@@ -62,12 +62,14 @@ async def process_start_command(message: types.Message):
     t = datetime.datetime.now().time().minute
 
 
+# бан функция
 @dp.message_handler(is_admin=True, commands=['ban'], commands_prefix='!/')
 async def qwe(message: types.Message):
 
     await message.bot.kick_chat_member(chat_id=config.GROUP_ID, user_id=message.reply_to_message.from_user.id)
 
 
+# функция для регистрации
 @dp.message_handler(commands=['register'], commands_prefix='!/')
 async def register(message: types.Message):
     global register, user
@@ -83,6 +85,7 @@ async def register(message: types.Message):
             await message.reply('Для регистрации укажите свою электоронную почту.')
 
 
+# функция обрабатывающая новых участников
 @dp.message_handler(content_types=['new_chat_members'])
 async def on_user_joined(message: types.Message):
     global timeout, c
@@ -227,6 +230,7 @@ async def moscow(call: types.CallbackQuery):
             await call.message.edit_reply_markup()
 
 
+# функция филитрации всех сообщений
 @dp.message_handler()
 async def filter_message(message: types.Message):
     global register, user, cod, body, gmail, keyboard, i, ewelink, msg
@@ -424,6 +428,7 @@ async def update_results(call: types.CallbackQuery):
     await call.message.answer('Список девайсов:', reply_markup=clevhouse)
 
 
+# функция отправляющая
 def email(to):
     global body
     gmail_user = 'telebot288@gmail.com'
@@ -453,7 +458,7 @@ def email(to):
     except:
         print('Ошибка')
 
-
+# функция для записи в бд
 def bd(gmail, user):
     con = sqlite3.connect("Telebot.sqlite")
     cur = con.cursor()
