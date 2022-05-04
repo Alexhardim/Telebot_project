@@ -5,16 +5,11 @@ from filter import IsAdminFilter
 from SonoffBasic.sonoff import Sonoff
 import devises
 import threading
+from threading import Thread
 cod = False
 register = False
-
-
-def f(f_stop):
-    # do something here ...
-    if not f_stop.is_set():
-        # call f() again in 60 seconds
-        threading.Timer(60, f, [f_stop]).start()
-
+tf = False
+not_reg_user = ''
 
 # курс доллара
 data = requests.get('https://www.cbr-xml-daily.ru/daily_json.js').json()
@@ -49,17 +44,17 @@ for i in range(len(config.result2)):
 @dp.message_handler(commands=['start'], commands_prefix='!/')
 async def process_start_command(message: types.Message):
     global t
-
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    button1 = types.KeyboardButton(text='Курс доллара')
-    button2 = types.KeyboardButton(text='Погода')
-    button3 = types.KeyboardButton(text='Ewelink')
-    keyboard.add(button1)
-    keyboard.add(button2)
-    keyboard.add(button3)
-    print(message)
-    await message.reply(f"Здравствуй {message.from_user.first_name}, чем могу помочь?", reply_markup=keyboard)
-    t = datetime.datetime.now().time().minute
+    if message.chat.type == 'private':
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        button1 = types.KeyboardButton(text='Курс доллара')
+        button2 = types.KeyboardButton(text='Погода')
+        button3 = types.KeyboardButton(text='Умный дом')
+        keyboard.add(button1)
+        keyboard.add(button2)
+        keyboard.add(button3)
+        print(message)
+        await message.reply(f"Здравствуй {message.from_user.first_name}, чем могу помочь?", reply_markup=keyboard)
+        t = datetime.datetime.now().time().minute
 
 
 # бан функция
@@ -88,7 +83,7 @@ async def register(message: types.Message):
 # функция обрабатывающая новых участников
 @dp.message_handler(content_types=['new_chat_members'])
 async def on_user_joined(message: types.Message):
-    global timeout, c
+    global timeout, c, tf, not_reg_user
     not_reg_user = message['new_chat_member']['id']
 
     if str(not_reg_user) in config.r:
@@ -113,7 +108,13 @@ async def on_user_joined(message: types.Message):
             new_user = message['new_chat_member']['first_name']
             await message.reply(f'Здравствуй {new_user}, ты должен зарегестрироваться у @pythontest11101bot.\n'
                                 f'После этого ты сможешь писать сообщения.')
-
+        def delete():
+            global tf
+            time.sleep(10)
+            tf = True
+        th = Thread(target=delete, args=())
+        # И запускаем его
+        th.start()
 
 @dp.callback_query_handler(text="Krasnodar")
 async def krasnodar(call: types.CallbackQuery):
@@ -233,10 +234,14 @@ async def moscow(call: types.CallbackQuery):
 # функция филитрации всех сообщений
 @dp.message_handler()
 async def filter_message(message: types.Message):
-    global register, user, cod, body, gmail, keyboard, i, ewelink, msg
+    global register, user, cod, body, gmail, keyboard, i, ewelink, msg, tf, not_reg_user
     print(message)
+    if tf:
+        await bot.kick_chat_member(chat_id=config.GROUP_ID, user_id=not_reg_user)
     if message.chat.type == 'supergroup':
         if str(message.from_user.id) not in config.r:
+            await message.delete()
+        elif message.text in config.bad_slov:
             await message.delete()
     if message.chat.type == 'private':
         if message.text == 'Курс доллара':
@@ -254,7 +259,7 @@ async def filter_message(message: types.Message):
                 await message.reply('Вам надо зарегестрироваться')
             else:
                 await message.answer("Из какого вы города?", reply_markup=pogoda)
-        if message.text == 'Ewelink':
+        if message.text == 'Умный дом':
             if str(message.from_user.id) not in config.r:
                 await message.reply('Вам надо зарегестрироваться')
             else:
