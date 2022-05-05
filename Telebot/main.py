@@ -108,14 +108,8 @@ async def on_user_joined(message: types.Message):
             new_user = message['new_chat_member']['first_name']
             await message.reply(f'Здравствуй {new_user}, ты должен зарегестрироваться у @pythontest11101bot.\n'
                                 f'После этого ты сможешь писать сообщения.')
-        def delete():
-            global tf
-            time.sleep(10)
-            tf = True
-        th = Thread(target=delete, args=())
-        # И запускаем его
-        th.start()
-
+        time.sleep(15)
+        await bot.kick_chat_member(chat_id=config.GROUP_ID, user_id=not_reg_user)
 @dp.callback_query_handler(text="Krasnodar")
 async def krasnodar(call: types.CallbackQuery):
     cold = False
@@ -236,8 +230,6 @@ async def moscow(call: types.CallbackQuery):
 async def filter_message(message: types.Message):
     global register, user, cod, body, gmail, keyboard, i, ewelink, msg, tf, not_reg_user
     print(message)
-    if tf:
-        await bot.kick_chat_member(chat_id=config.GROUP_ID, user_id=not_reg_user)
     if message.chat.type == 'supergroup':
         if str(message.from_user.id) not in config.r:
             await message.delete()
